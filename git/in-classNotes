@@ -1,0 +1,82 @@
+
+Agenda:
+========================
+
+- deletion of files in git local repo and Working directory
+
+ step1: become root user in the lab
+
+# sudo su -
+
+step 2: go inside your working directory:
+
+# cd myproject
+
+step 3: git status ==> working tree clean
+
+step 4: execute command ==> git ls-files    ==> list the files that are in local repo
+
+step 5: select any filename and we are going to delete it form LR and WD
+
+# git rm filename
+
+because you did a deletion action-> a change occured on LR -> so we have to again commit the deletion of the file
+
+# git commit -m "deletion of file"  --> commit all the changes/files that are in staging area
+
+
+- Revert command
+
+the revert command in git works only on a commit id
+
+This command will be applied to only a single commit id
+
+this command will revert the changes back to its previous version
+
+deleted a file --> revert command on the deletion commit id --> we will get the file back to LR and WD
+
+because you did a revert action-> a change occured on LR -> so we have to again commit
+
+revert command will itself auto commit-> you dont have to exeucte the commit command
+
+but what about the commit message?
+
+so for this
+
+revert command when executed--> will open an nano editor-> for you to enter a message -> save the file and come out of it
+auto commit will complete by itself
+
+
+- Branches, merging in git
+
+> A branch represents an independent line on development
+> keeps snapshot of your changes with your commit id
+> without a branch it is not psosible to work on git
+> We can commit only if we have a branch
+> to keep a reference tyo your commit id-- git brings the concept of branching
+
+ > knowingly or unknowingly -> you have been working on branches form the evry begining
+
+ > whenever we do the command git init --> it creates a branch called as MASTER branch
+ 
+ > it is the golden and default branch -> we cannot delete the branch -> we can rename it
+
+> we can create more branches in the LR for new development/features/bugfixes
+
+and then switch to the branch to do the changes and commits
+
+
+
+
+we can merge the new branch with the main/master branch
+
+steps 1: first switch to the branch where you have to do merging
+
+stpe 2: then perform merge command
+
+ # git merge featurebranchname master
+
+
+merge command will merge all the commits and files from the feature branch to the master branch
+
+thos commits and chnages/files that are not on master branch
