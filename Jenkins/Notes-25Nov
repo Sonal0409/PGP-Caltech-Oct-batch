@@ -1,0 +1,87 @@
+Continuous Integration with Jenkins:
+===============================================
+
+Go to lab terminal
+
+Execute:
+
+$ sudo su -
+
+$ systemctl start jenkins
+
+$ systemctl status jenkins
+
+Go to browser
+
+Give following url 
+localhost:8080
+
+Login with following details:
+
+Username: admin
+Password: admin
+
+Note: the Jenkins home directory is /var/lib/jenkins
+
+
+======================================
+Steps to Install jenkins on ubuntu server:
+Install Jenkins:
+=====================
+
+java - version
+
+sudo apt install default-jre
+
+sudo apt install default-jdk
+
+Install jenkins:
+
+Alwyas take latest download link from jenkins website.
+
+Execute below commands:
+
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+
+Then add a Jenkins apt repository entry:
+    
+  echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+
+Update your local package index, then finally install Jenkins:
+
+
+    
+  sudo apt-get update
+ sudo apt-get install jenkins -y
+
+systemctl start jenkins
+============================================
+
+
+
+
+
+Creation of a Job:
+************************************
+
+#1 Jenkins --> Click on New Item --> give name as Job1 --> Select freestyle project →press oK button
+
+Got to Build tab -->select execute shell command---> write the below commands:
+
+echo "hello Jenkins"
+touch sonal
+
+
+Save --> click on Build Now  --> click on build number --> click on Console to see output
+
+
+Demo 2: Jenkins integration with Git & github
+============================================
+
+Jenkins --> New Item -->give name as  cloneRepo -->Click on Freestyle Project→ click on source code management -->select git---> give repository name→ https://github.com/Sonal0409/DevOpsCodeDemo.git
+
+Select branch name as master.
+
+Save --> click on Build Now  --> click on build number --> click on Console to see output
+Click on the workspace folder on the left side  to see the cloned repository files.
