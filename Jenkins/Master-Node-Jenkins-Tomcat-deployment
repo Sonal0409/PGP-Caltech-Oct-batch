@@ -1,0 +1,574 @@
+Master and node architecture in Jenkins
+
+
+
+
+
+
+Create a linux slave and dispatch job from master to slave
+
+Create a new EC2 instance with OS as Amazon linux 2
+Provide the security group rule 2 also.
+
+Connect to the instance and install following tools:
+
+Execute command to become root
+
+sudo su -
+
+Java:
+
+sudo amazon-linux-extras install java-openjdk11 -y
+
+GIT:
+
+yum install git -y
+
+            Create a root directory
+This directory will be used exclusively my Jenkisn master to place remote files and create job workspace
+You need to create a directory and give read/write/execute access to it
+
+Execute:
+
+$ cd /tmp
+$ mkdir jenkinsdir
+
+The path of root directory will be /tmp/jenkinsdir
+
+give read/write/execute access to the root directory
+
+$ chmod -R 777 /tmp/jenkinsdir
+
+**********************************************
+
+Setup on Jenkins master:
+
+Go to manage jenkins → Configure system → Scroll down to jenkins location and change the Jenkisn URL to be the latest URL
+
+http://3.147.195.251:8080/
+
+Save the page
+
+
+2. Manage jenkins → configure global security→ scroll down → Agents → select Random radio button
+
+Save the page
+
+
+Manage Jenkins – Manage nodes and Clouds
+
+Click on + New node
+
+Give node name: slave1
+
+Select Permanent Agent
+
+Click on create
+
+Now give description : anything text
+
+Number of executors: 1
+
+Remote root directory: /tmp/jenkinsdir
+
+
+Labels : linux_slave
+
+Usage : select second option from dropdown
+
+
+
+Launch method: launch agents via SSH
+
+Host: private IP of agent node
+
+Credentials: click on Add button > click on jenkins
+
+Select Kind : SSH username and private key
+
+username: ec2-user
+
+Private key: you will get the private key of the agent node in your local laptop> downloads folder
+
+got the downloads folder of laptop, search for the key(.pemfile)
+
+open the file with notepad and copy the entire text
+
+paste the text in jenkins > under private key
+
+
+Now select the credials from the drop down.
+
+
+step 7: Host Key Verification Strategy → select the 4th option->Non verifying Verification Strategy
+
+Save the node details
+
+On the dashboard you can see the node is now connected to master
+
+Reference material:
+https://wiki.jenkins.io/display/JENKINS/Distributed+builds#Distributedbuilds-Schedulingstrategy
+
+
+
+
+Windows Agent:
+
+
+Download git on windows server:
+
+https://git-scm.com/download/win
+
+Download java 11 on windows server
+
+https://www.oracle.com/in/java/technologies/javase/jdk11-archive-downloads.html
+
+
+restart the instance.
+Restart the jenkins server
+now take public ip and loginto jenkins
+
+Step 1: Go to Manage Jenkins ---> CONFIGURE SYSTEM ---> Check the Jenkins URL is same as URL of browser --> Save
+Step 2: Go to Manage Jenkins---> CONFIGURE GLOBAL SECURITY --> Scroll down to AGENTS-->select RANDOM radiobutton--> Save
+Step 3: Go to Manage Jenkins---> MAnage Nodes and Clouds  --> New Node
+
+Select New Node--> give name as Winslave--> select radio button permanamet Agent
+
+Name : winslave
+Description: give windows 10 machine 
+==> # of executors = 1 ==> means number of jobs that we want to run on this slave node. Let it be 1 for now
+===> Remote root directory ==> C:\jenkinsdir
+Location of a directory folder on your windows machine , so that jenkins can create a workspace folder and store all the files. As we have seen earlier while executiong jobs.
+For this --> got to C drive and create an emapty folder.
+C:\jenkinsdir
+
+====>  Label : win_slave ==> this is like a tag to slave machine. This is how we will identify the slave machine--> remeber this
+
+===> Usage: 
+Select 2nd option: Only build jobs with label expressionmatching the job :
+This means for which ever job we will give label as win_slave that job only will run on this job.
+
+===> Launch Method : select option : Launch agent by connecting to master.
+
+Scroll down
+
+Add tools
+
+Add git path as C:\Program Files\Git\cmd\git.exe
+
+
+SAVE the job.
+
+Now go to win_slave ==> download the agent.jar file and put it in your jenkinsdir folder.
+
+Copy the path and change the public ip in below path
+java -jar agent.jar -jnlpUrl http://3.139.60.71:8080/computer/winslave/slave-agent.jnlp -secret 61e8e20badd531b48caeffac8d686f182eb2d77a1c303ee39c5db9d00117c0be -workDir "C:\jenkinsdir"
+
+Go to bash and start jenkins, refresh instance
+Go to cmd prompt
+change to cd c:\jenkinsdir
+copy the above jenkins agent path
+System will get connected.
+
+***************************************
+RUN a job on Agent
+
+Go to Dashboard
+
+Select the package job---> configure --> GENERAL --> click on Restrict where this project can be run and enter win_slave  
+
+SAVE THE JOB
+
+CLICK on BUILD NOW -- to start the build
+
+CLick on build number--> got to console --to check it is executing on AGent
+
+Go to C folder-->jekinsdir---> C:\jenkinsdir\workspace\package\target==> 
+you will see addressbook.war file.
+
+========================================================
+
+Continuous Deployment
+
+Tomcat server- Installation on EC2  (2 VM, other than the jenkins machine)
+
+Deployment of war file on tomcat server using freestyle project
+ > Jenkins plugin : deploy on container
+
+Deployment of war file on tomcat server using pipeline project
+ > Jenkins plugin: SSH Agent
+
+Quiz for your end exam
+
+
+********************************
+
+Deployment Process (for your information)
+
+https://tomcat.apache.org/tomcat-7.0-doc/appdev/sample/
+
+The easiest way to run this application is simply to move the war file to your CATALINA_HOME/webapps directory. Tomcat will automatically expand and deploy the application for you. You can view it with the following URL (assuming that you're running tomcat on port 8080 as is the default):
+Public ip:8080/sample
+
+Set for tomcat
+*****************
+
+Tomcat installation on EC2 instance
+
+Pre-requisites
+
+EC2 instance with Java 11
+
+sudo amazon-linux-extras install java-openjdk11 -y
+
+You can execute the command : [optional]
+
+# alternatives --config java
+
+To check java version, it should be 11
+
+
+Install tomcat:
+
+# Create tomcat directory
+
+Go to the EC2 machine - t2 micro
+
+
+cd /opt
+
+#  wget https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.93/bin/apache-tomcat-8.5.93.tar.gz
+
+#  ls   ⇒ you will see the tar file
+
+# tar -xvzf apache-tomcat-8.5.93.tar.gz
+
+Rename the directory
+
+# mv apache-tomcat-8.5.93 tomcat
+
+#  cd tomcat
+
+
+# cd bin
+
+# ./startup.sh   ==> tomcat will be up and running
+
+Check point :
+
+access tomcat application from browser on port 8080
+
+<Public_IP>:8080
+
+Lets edit the context.xml file so as to access manager app
+
+
+# cd ..
+
+# vim /opt/tomcat/webapps/host-manager/META-INF/context.xml
+
+comment this line in the contxt.xml
+<Valve className="org.apache.catalina.valves.RemoteAddrValve"
+         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" />
+
+How to comment : : use this symbols:
+
+  <!--  <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+  allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" /> -->
+
+# vim /opt/tomcat/webapps/manager/META-INF/context.xml
+
+comment this line in the contxt.xml
+<Valve className="org.apache.catalina.valves.RemoteAddrValve"
+         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" />
+
+How: use this symbols:
+
+  <!--  <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+  allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" /> -->
+
+
+Save the files
+
+ Restart tomcat services
+
+#  cd bin
+
+# ./shutdown.sh
+
+# ./startup.sh
+
+
+
+Create roles and users
+
+# cd ..
+# 
+$ cd conf
+
+$ vim tomcat-users.xml
+
+Scroll till bottom and add 
+
+at the end before </tomcat-users> add these roles
+
+<role rolename="manager-gui"/>
+<role rolename="manager-script"/>
+<role rolename="manager-jmx"/>
+<role rolename="manager-status"/>
+<user username="admin" password="admin" roles="manager-gui, manager-script, manager-jmx, manager-status"/>
+<user username="deployer" password="deployer" roles="manager-script"/>
+<user username="tomcat" password="s3cret" roles="manager-gui"/>
+
+Save the file
+
+Make sure there is no space before each line in the file
+
+********************************
+
+Restart tomcat
+
+# cd ..
+
+$ cd bin
+
+$ ./shutdown.sh
+
+$ ./startup.sh
+
+
+publicip:8080
+
+click on managerapp
+
+Username:    tomcat
+Password:   s3cret
+
+
+
+This completed tomcat installation
+***********************************************
+
+Go to jenkins server and start the jenkins dashboard
+
+Download a plugin: Deploy to container
+
+Create a free style job
+
+Give name to the job
+
+Select freestyle project
+Press okay
+
+give the repo name:  https://github.com/Sonal0409/DevOpsCodeDemo.git
+
+Build steps : select Invoke top level maven targets
+
+Maven Version : mymaven
+Goal: clean package
+
+Post build actions
+
+select deploy war/ear on container
+
+
+
+WAR/EAR files : **/*.war
+
+Containers:
+
+click on add container--> select Tomcat 8.x Remote
+
+Add credentials. Click on ADD button→ jenkins→
+Username: deployer , password = deployer
+Id = tomcat, description = tomcat
+
+Click on ADD button to save the credentials
+In credentials dropdown, select the credentials
+
+Tomcat URL
+
+http://publicip:8080/
+
+Save the job and execute it
+
+You can access the application from 
+
+http://publicip:8080/addressbook/
+
+
+Scenario 2:
+
+Deploy code on tomcat using Pipeline as code
+
+Algorithm of stages in the pipeline:
+
+Stage 1 -> clone the repo   
+Stage2 -> Package the code
+Stage3 -> Deployment of war file
+ >  jenkins will connect to tomcat server over ssh
+> using SSH command(SCP) we will copy the war file from jenkins workspace to the webapps directory of tomcat server
+
+
+Step 1: Start the tomcat webserver
+
+# cd /opt
+# cd tomcat
+# cd bin
+# ./startup.sh
+
+Step 2: In jenkins – Download a plugin : ssh agent
+Install it.
+
+Step 3: Create a pipeline job
+Stage 1 -> clone the repo   
+Stage2 -> Package the code
+
+Pipeline code for above 2 stages is :
+
+pipeline{
+    
+    tools{
+ 
+        maven 'mymaven'
+    }
+    
+    agent any
+    
+    stages{
+        stage ('Clone a repo')
+        {
+            steps {
+                git 'https://github.com/Sonal0409/DevOpsCodeDemo.git'
+            }
+        }
+        
+        stage ('Package the code')
+        {
+            steps{
+                sh 'mvn package'
+            }
+        }
+    }
+    
+}
+
+
+Now build the job
+
+Go to console output of build.. Scroll down and get the path of workspace where war file is present.
+
+For me it is:
+
+/var/lib/jenkins/workspace/CI_CDPipeline/target/addressbook.war
+
+
+Step 4:
+
+In the pipeline click on pipeline syntax
+
+Select from the drop down → SSH Agent
+
+Select the credentials by clicking on ADD button
+
+Select jenkins
+
+Select SSh with username with private key
+
+Give id : tomcatid2
+Give description as : tomcatid2
+Give username as : ec2-user
+Under Private Key
+Click on enter directly
+Click on Add button
+Go to AWS instance→ scroll right to see the pem file nae
+
+Go to download folder , get your pem file→ open it with notepad.. Copy all content and paste it in jenkins under key
+
+Clcik on ADD
+
+Under SSH agent in the drop down select your usercredentials
+
+Click on generate pipeline script
+
+Copy the script and we will add it in pipeline stage 
+
+ stage('Deploy the code on tomcat server')
+        {
+            steps{
+                
+                sshagent(['tomcatid1']) {
+                    
+    // script to copy war file on webapps directory
+    
+}
+            }
+        }
+
+
+Using SSH we will copy the addressbook.war file in the tomcat webapps directory
+
+The SSh command to copy the .war file is:
+
+ command:  scp  -o StrictHostKeyChecking=no filenamelocation username@publicip:Destinationpath
+
+For me it is :
+
+sh 'scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/PipelineCodeDeployment/target/addressbook.war ec2-user@18.116.238.106:/opt/tomcat/webapps'
+
+Save the JOB
+
+
+***** Also an important step is :
+
+Go to tomcat server and give permissions to ec2-user to make changes to webapps directory
+
+Just execute this command on tomcat server:
+
+# chown -R ec2-user:ec2-user /opt
+
+Now build the job.
+
+
+Complete script for CI Cd is:
+
+pipeline{
+    
+    tools{
+  
+        maven 'mymaven'
+    }
+    
+    agent any
+    
+    stages{
+        stage ('Clone a repo')
+        {
+            steps {
+                git 'https://github.com/Sonal0409/DevOpsCodeDemo.git'
+            }
+        }
+        
+        stage ('Package the code')
+        {
+            steps{
+                sh 'mvn package'
+            }
+        }
+        
+        stage('Deploy the code on tomcat server')
+        {
+            steps{
+                
+                sshagent(['tomcatid1']) {
+                    
+    
+sh 'scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/PipelineCodeDeployment/target/addressbook.war ec2-user@18.116.238.106:/opt/tomcat/webapps'
+
+    
+}
+            }
+        }
+    }
+    
+}
